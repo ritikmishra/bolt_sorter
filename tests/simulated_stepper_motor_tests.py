@@ -1,7 +1,7 @@
 import unittest
 import time
 
-from stepper_motor.simulated_stepper_motor import SimulatedStepperMotor
+from stepper_motor import SimulatedStepperMotor
 
 
 class StepperMotorTests(unittest.TestCase):

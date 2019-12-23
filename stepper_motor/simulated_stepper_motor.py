@@ -1,4 +1,4 @@
-from stepper_motor.interface_stepper_motor import StepperMotor
+from stepper_motor import StepperMotor
 import time
 
 DEFAULT_STEPS_PER_REV = 200
