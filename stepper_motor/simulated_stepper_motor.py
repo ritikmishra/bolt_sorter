@@ -21,6 +21,9 @@ class SimulatedStepperMotor(StepperMotor):
     def get_pos(self):
         return self._position_counter
 
+    def get_revs(self):
+        return self._position_counter / self.steps_per_rev
+
     def reset_pos(self, new_pos_val=0):
         self._position_counter = new_pos_val
 

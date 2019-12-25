@@ -34,6 +34,15 @@ class StepperMotor(ABC):
         pass
 
     @abstractmethod
+    def get_revs(self):
+        """
+        Returns the number of revolutions this motor has completed
+
+        :return:
+        """
+        pass
+
+    @abstractmethod
     def reset_pos(self, new_pos_val = 0):
         """
         Reset the measured pose based on other sensor input e.g a limit switch
