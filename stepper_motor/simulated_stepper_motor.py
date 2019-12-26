@@ -27,24 +27,25 @@ class SimulatedStepperMotor(StepperMotor):
     def reset_pos(self, new_pos_val=0):
         self._position_counter = new_pos_val
 
-    def run_to_pos(self, desired_pos, rpm):
+    def run_to_pos(self, desired_steps, rpm):
         secs_per_step = 60 / (rpm * self.steps_per_rev)
 
         # TODO: Support microstepping?
-        self._overflow += desired_pos % 1
-        desired_pos = desired_pos // 1
+        self._overflow += desired_steps % 1
+        desired_steps = int(desired_steps // 1)
 
         if self._overflow > 1:
-            desired_pos += self._overflow // 1
+            desired_steps += self._overflow // 1
             self._overflow -= self._overflow // 1
 
-        if desired_pos == self._position_counter:
+        if desired_steps == self._position_counter:
             return self._position_counter
 
-        steps_to_take = abs(desired_pos - self._position_counter)
-        forwards = desired_pos > self._position_counter
+        steps_to_take = abs(desired_steps - self._position_counter)
+        forwards = desired_steps > self._position_counter
 
-        for _ in range(steps_to_take):
+        assert int(steps_to_take) == steps_to_take
+        for _ in range(int(steps_to_take)):
             self.step(forwards)
             time.sleep(secs_per_step)
 
@@ -57,4 +58,3 @@ class SimulatedStepperMotor(StepperMotor):
         :return:
         """
         pass
-
