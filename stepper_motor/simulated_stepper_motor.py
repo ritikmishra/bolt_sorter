@@ -1,13 +1,12 @@
 from stepper_motor import StepperMotor
 import time
 
-DEFAULT_STEPS_PER_REV = 200
+from stepper_motor.interface_stepper_motor import DEFAULT_STEPS_PER_REV
 
 
 class SimulatedStepperMotor(StepperMotor):
     def __init__(self, steps_per_rev=DEFAULT_STEPS_PER_REV):
-        super().__init__()
-        self.steps_per_rev = steps_per_rev
+        super().__init__(steps_per_rev)
 
         self._position_counter = 0
         self._overflow = 0

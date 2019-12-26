@@ -8,10 +8,13 @@ from abc import ABC, abstractmethod
 # reset
 # direction
 # step!
+DEFAULT_STEPS_PER_REV = 200
 
 class StepperMotor(ABC):
-    def __init__(self):
+    def __init__(self, steps_per_rev=DEFAULT_STEPS_PER_REV):
         super().__init__()
+        self.steps_per_rev = steps_per_rev
+
 
     @abstractmethod
     def step(self, forwards: bool = True):
@@ -43,7 +46,7 @@ class StepperMotor(ABC):
         pass
 
     @abstractmethod
-    def reset_pos(self, new_pos_val = 0):
+    def reset_pos(self, new_pos_val=0):
         """
         Reset the measured pose based on other sensor input e.g a limit switch
 
