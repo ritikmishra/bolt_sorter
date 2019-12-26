@@ -10,7 +10,7 @@ from units import Inches
 class KinematicsHelperTests(unittest.TestCase):
     def setUp(self):
         self.joint_1_length = Inches(4)
-        self.joint_2_length = Inches(4)
+        self.joint_2_length = Inches(5)  # Math works out a little differently when we have to
         self.total_length = self.joint_1_length + self.joint_2_length
         self.kh = KinematicsHelper(self.joint_1_length, self.joint_2_length)
 
@@ -42,17 +42,11 @@ class KinematicsHelperTests(unittest.TestCase):
             np.array([[self.total_length / math.sqrt(2)], [self.total_length / math.sqrt(2)], [0]])
         )
 
-        origin = np.array([[69], [math.pi / 3], [math.pi]])
-        np.testing.assert_array_almost_equal(
-            self.kh.forwards_kinematics(origin),
-            np.array([[0], [0], [0]])
-        )
-
         # TODO: Add more test cases
 
     def test_inverse_kinematics(self):
         poses_to_try = [
-            np.array([[0], [0], [0]]),
+            # np.array([[0], [0], [0]]),
             np.array([[0], [0], [1]]),
             np.array([[0], [0], [2]]),
             np.array([[0], [0], [3]]),
@@ -118,6 +112,9 @@ class KinematicsHelperTests(unittest.TestCase):
             np.array([[3], [3], [3]]),
 
         ]
+
+        neg_poses = list(map(lambda arr: -1 * arr, poses_to_try))
+        poses_to_try.extend(neg_poses)
 
         for expected_pose in poses_to_try:
             joint_angle_options = self.kh.inverse_kinematics(expected_pose)
