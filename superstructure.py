@@ -1,3 +1,4 @@
+import threading
 from typing import Tuple
 
 import numpy as np
@@ -112,4 +113,51 @@ class KinematicsHelper(object):
                          [y],
                          [z]])
 
+    def get_joint_1_length(self) -> Inches:
+        return self._joint_1_length
 
+    def get_joint_2_length(self) -> Inches:
+        return self._joint_2_length
+
+
+class SuperstructureController(object):
+    def __init__(self, turret_wrapper: StepperMotorWrapper, joint_1_wrapper: StepperMotorWrapper,
+                 joint_2_wrapper: StepperMotorWrapper):
+        self.turret = turret_wrapper
+        self.joint_1 = joint_1_wrapper
+        self.joint_2 = joint_2_wrapper
+
+        self.kh = KinematicsHelper(Inches(4), Inches(4))
+
+    def go_to_point(self, desired_cartesian: np.array):
+        # Let the ValueError propagate
+        joint_angle_options = self.kh.inverse_kinematics(desired_cartesian)
+
+        # TODO: Intelligently select joint angles
+        selected_joint_angle = joint_angle_options[1].flatten()
+
+        print(selected_joint_angle)
+        # TODO: Intelligently select velocities
+        default_rpm = 3
+
+        deltas = np.array([
+            abs(self.turret.get_pos() - selected_joint_angle[0]),
+            abs(self.joint_1.get_pos() - selected_joint_angle[1]),
+            abs(self.joint_2.get_pos() - selected_joint_angle[2])])
+
+        if np.linalg.norm(deltas) > 0:
+            deltas /= np.max(deltas[np.nonzero(deltas)])
+
+            rpms = deltas * default_rpm
+
+            turret_thread = threading.Thread(target=self.turret.run_to_angle, args=(selected_joint_angle[0], rpms[0]))
+            joint_1_thread = threading.Thread(target=self.joint_1.run_to_angle, args=(selected_joint_angle[1], rpms[1]))
+            joint_2_thread = threading.Thread(target=self.joint_2.run_to_angle, args=(selected_joint_angle[2], rpms[2]))
+
+            turret_thread.start()
+            joint_1_thread.start()
+            joint_2_thread.start()
+
+            turret_thread.join()
+            joint_1_thread.join()
+            joint_2_thread.join()
