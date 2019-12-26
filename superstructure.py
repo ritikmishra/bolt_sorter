@@ -40,10 +40,14 @@ class KinematicsHelper(object):
 
         if d > r0 + r1 or d < abs(r0 - r1):
             # circles completely outside or inside each other, circumfrence not intersecting
-            raise ValueError("desired_end_location impossible given current joint lengths")
+            raise ValueError(
+                "desired_end_location impossible given current joint lengths.\ndesired_end_location:\n{}".format(
+                    desired_end_location))
         elif d == 0:
             if r0 != r1:
-                raise ValueError("desired_end_location impossible given current joint lengths")
+                raise ValueError(
+                    "desired_end_location impossible given current joint lengths.\ndesired_end_location:\n{}".format(
+                        desired_end_location))
             else:  # r0 == r1
                 x3 = r0
                 y3 = 0
