@@ -7,11 +7,12 @@ import random
 from stepper_motor import SimulatedStepperMotor
 from stepper_motor.stepper_motor_wrapper import StepperMotorWrapper
 from superstructure import SuperstructureController
+from units import Inches
 
 top = tkinter.Tk()
 
-h = 600
-w = 600
+h = 900
+w = 900
 
 
 def convert_from_math_to_tk(coords):
@@ -26,20 +27,25 @@ turret_motor = StepperMotorWrapper(SimulatedStepperMotor(), 1 / 12)
 joint_1_motor = StepperMotorWrapper(SimulatedStepperMotor(), 1 / 5)
 joint_2_motor = StepperMotorWrapper(SimulatedStepperMotor(), 1 / 5)
 
-superstructure = SuperstructureController(turret_motor, joint_1_motor, joint_2_motor)
+superstructure = SuperstructureController(turret_motor, joint_1_motor, joint_2_motor, Inches(5), Inches(5))
 
 # superstructure.go_to_point(np.array([[3], [0], [3]], dtype=np.int64))
 goal_x = 2
 goal_y = 4
+new_goal = True
 
 
 def move_arm_around():
-    global goal_x, goal_y, superstructure
+    global goal_x, goal_y, superstructure, new_goal
     while True:
-        goal_x = random.randint(0, 5)
-        goal_y = random.randint(-5, 5)
+        goal_x = random.uniform(0, 5)
+        goal_y = random.uniform(-5, 5)
+        new_goal = True
 
-        superstructure.go_to_point(np.array([[goal_x], [0], [goal_y]]))
+        try:
+            superstructure.go_to_point(np.array([[goal_x], [0], [goal_y]]), idx=random.randint(0, 1))
+        except ValueError:
+            pass
 
 
 # thread = threading.Thread(target=superstructure.go_to_point, args=(np.array([[goal_x], [0], [goal_y]], dtype=np.int64),))
@@ -60,7 +66,7 @@ if __name__ == '__main__':
                           np.array([np.cos(joint_1_motor.get_pos()),
                                     np.sin(joint_1_motor.get_pos())])
 
-        joint_2_end_loc = superstructure.kh.get_joint_1_length() * px_over_in * \
+        joint_2_end_loc = superstructure.kh.get_joint_2_length() * px_over_in * \
                           np.array([np.cos(joint_2_motor.get_pos() + joint_1_motor.get_pos()),
                                     np.sin(joint_2_motor.get_pos() + joint_1_motor.get_pos())])
 
@@ -73,13 +79,14 @@ if __name__ == '__main__':
         joint_1_line = c.create_line(*origin, *joint_1_end_loc)
         joint_2_line = c.create_line(*joint_1_end_loc, *joint_2_end_loc, fill="red")
 
-        goal_x *= px_over_in
-        goal_y *= px_over_in
+        if new_goal:
+            goal_x *= px_over_in
+            goal_y *= px_over_in
 
-        goal_x, goal_y = convert_from_math_to_tk(np.array([goal_x, goal_y]))
+            goal_x, goal_y = convert_from_math_to_tk(np.array([goal_x, goal_y]))
+            new_goal = False
 
         goal_pt = c.create_oval(goal_x - 5, goal_y - 5, goal_x + 5, goal_y + 5)
 
         c.pack()
         top.update()
-        time.sleep(1 / 60)
