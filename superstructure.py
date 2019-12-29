@@ -122,23 +122,22 @@ class KinematicsHelper(object):
 
 class SuperstructureController(object):
     def __init__(self, turret_wrapper: StepperMotorWrapper, joint_1_wrapper: StepperMotorWrapper,
-                 joint_2_wrapper: StepperMotorWrapper):
+                 joint_2_wrapper: StepperMotorWrapper, joint_1_length: Inches = Inches(4), joint_2_length: Inches = Inches(4)):
         self.turret = turret_wrapper
         self.joint_1 = joint_1_wrapper
         self.joint_2 = joint_2_wrapper
 
-        self.kh = KinematicsHelper(Inches(4), Inches(4))
+        self.kh = KinematicsHelper(joint_1_length, joint_2_length)
 
-    def go_to_point(self, desired_cartesian: np.array):
+    def go_to_point(self, desired_cartesian: np.array, idx=1):
         # Let the ValueError propagate
         joint_angle_options = self.kh.inverse_kinematics(desired_cartesian)
 
         # TODO: Intelligently select joint angles
-        selected_joint_angle = joint_angle_options[1].flatten()
+        selected_joint_angle = joint_angle_options[idx].flatten()
 
-        print(selected_joint_angle)
         # TODO: Intelligently select velocities
-        default_rpm = 3
+        default_rpm = 15
 
         deltas = np.array([
             abs(self.turret.get_pos() - selected_joint_angle[0]),
@@ -146,8 +145,8 @@ class SuperstructureController(object):
             abs(self.joint_2.get_pos() - selected_joint_angle[2])])
 
         if np.linalg.norm(deltas) > 0:
+            # ensure that all joints finish moving at the same time
             deltas /= np.max(deltas[np.nonzero(deltas)])
-
             rpms = deltas * default_rpm
 
             turret_thread = threading.Thread(target=self.turret.run_to_angle, args=(selected_joint_angle[0], rpms[0]))
