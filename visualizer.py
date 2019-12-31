@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import threading
 import time
+import itertools
 import tkinter
 import numpy as np
 import random
@@ -17,7 +18,7 @@ w = 900
 
 def convert_from_math_to_tk(coords):
     coords[1] *= -1
-    coords += np.array([w / 2.0, h / 2.0], dtype=np.int64)
+    coords += np.array([w / 3.0, h / 2.0], dtype=np.int64)
     return coords
 
 
@@ -34,16 +35,18 @@ goal_x = 2
 goal_y = 4
 new_goal = True
 
+previous_points = []
+
 
 def move_arm_around():
-    global goal_x, goal_y, superstructure, new_goal
+    global goal_x, goal_y, superstructure, new_goal, previous_points
     while True:
         goal_x = random.uniform(0, 5)
         goal_y = random.uniform(-5, 5)
         new_goal = True
 
         try:
-            superstructure.go_to_point(np.array([[goal_x], [0], [goal_y]]), idx=random.randint(0, 1))
+            superstructure.go_to_point(np.array([[goal_x], [0], [goal_y]]), idx=1)  #random.randint(0, 1))
         except ValueError:
             pass
 
@@ -57,7 +60,6 @@ px_over_in = 50
 if __name__ == '__main__':
     # Code to add widgets will go here...
     while True:
-        print(joint_1_motor.get_pos(), joint_2_motor.get_pos())
         c.delete("all")
 
         origin = np.array([0, 0])
@@ -88,5 +90,17 @@ if __name__ == '__main__':
 
         goal_pt = c.create_oval(goal_x - 5, goal_y - 5, goal_x + 5, goal_y + 5)
 
+        k = 500
+        if len(previous_points) > k:
+            previous_points = previous_points[-k:]
+
+        convert_single_pt = lambda pt: convert_from_math_to_tk(np.array(pt) * px_over_in)
+        convert_pts = lambda pt_tuple: (convert_single_pt(pt_tuple[0]), convert_single_pt(pt_tuple[1]))
+
+        for pt_1, pt_2 in map(convert_pts, zip(previous_points[:-1], previous_points[1:])):
+            c.create_line(*pt_1, *pt_2, fill="blue")
+
+        # print(previous_points)
+        previous_points.append(tuple(superstructure.current_pos()[::2].flatten()))
         c.pack()
         top.update()
