@@ -129,6 +129,13 @@ class SuperstructureController(object):
 
         self.kh = KinematicsHelper(joint_1_length, joint_2_length)
 
+    def current_pos(self) -> np.array:
+        return self.kh.forwards_kinematics(np.array([
+            [self.turret.get_pos()],
+            [self.joint_1.get_pos()],
+            [self.joint_2.get_pos()]
+        ]))
+
     def go_to_point(self, desired_cartesian: np.array, idx=1):
         # Let the ValueError propagate
         joint_angle_options = self.kh.inverse_kinematics(desired_cartesian)
