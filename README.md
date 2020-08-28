@@ -1,6 +1,8 @@
 bolt_sorter
 ===========
 
+*Note: This project is on hold for the duration of the pandemic as the hardware/electronics this software is supposed to run on is stuck in a university lab that is closed for the duration of the pandemic*
+
 A Python 3.6.8 to control a double-jointed arm on a turret to (hopefully!) sort bolts by thread 
 pitch and outer diameter. 
 
